@@ -79,3 +79,37 @@ history = dnn_horsepower_model.fit(
 x = tf.linspace(0.0, 250, 251)
 y = dnn_horsepower_model.predict(x)
 test_results['dnn_horsepower_model'] = dnn_horsepower_model.evaluate(test_features['Horsepower'], test_labels,verbose=0)
+
+print("-*-*-*-*-*-*-*-*-*-*-*-*-*,DNN ile Çoklu girişli Regresyon")
+
+dnn_model = build_and_compile_model(normalizer)
+dnn_model.summary()
+history = dnn_model.fit(
+    train_features,
+    train_labels,
+    validation_split=0.2,
+    verbose=0, epochs=100)
+test_results['dnn_model'] = dnn_model.evaluate(test_features, test_labels, verbose=0)
+pd.DataFrame(test_results, index=['Mean absolute error [MPG]']).T
+
+#Tahminlerde bulunma
+test_predictions = dnn_model.predict(test_features).flatten()
+
+a = plt.axes(aspect='equal')
+plt.scatter(test_labels, test_predictions)
+plt.xlabel('True Values [MPG]')
+plt.ylabel('Predictions [MPG]')
+lims = [0, 50]
+plt.xlim(lims)
+plt.ylim(lims)
+_ = plt.plot(lims, lims)
+
+dnn_model.save('dnn_model')
+#Modeli yeniden yükleriz ve aynı çıktıyı verir.
+reloaded = tf.keras.models.load_model('dnn_model')
+
+test_results['reloaded'] = reloaded.evaluate(
+    test_features, test_labels, verbose=0)
+
+
+pd.DataFrame(test_results, index=['Mean absolute error [MPG]']).T
